@@ -36,8 +36,7 @@ const server = http2.createSecureServer({
 server.on('stream', (stream, headers) => {
   console.log(headers[':path'])
   const reqPath = headers[':path'] === '/' ? '/index.html' : headers[':path']
-  const file = publicFiles.get(headers[':path']);
-  // console.dir(reqPath);
+  const file = publicFiles.get(reqPath);
   
   if(!file) {
     stream.statusCode = 404
