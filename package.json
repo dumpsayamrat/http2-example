@@ -1,0 +1,14 @@
+{
+  "name": "http-example",
+  "version": "1.0.0",
+  "description": "An Implementation of http2 using node 10",
+  "main": "src/server.js",
+  "scripts": {
+    "test": "echo \"Test is coming\""
+  },
+  "author": "dumpsayamrat",
+  "license": "ISC",
+  "dependencies": {
+    "mime": "^2.3.1"
+  }
+}
