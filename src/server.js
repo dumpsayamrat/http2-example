@@ -1,20 +1,20 @@
 'use strict'
 
-const http2 = require('http2');
-const fs = require('fs');
-const fsPromise = fs.promises;
+const http2 = require('http2')
+const fs = require('fs')
 const path = require('path')
 const helper = require('./helper')
-const { HTTP2_HEADER_PATH } = http2.constants
 
+const { HTTP2_HEADER_PATH } = http2.constants
 const PUBLIC_PATH = path.join(__dirname, '../public')
 const SSL_PATH = path.join(__dirname, '../ssl')
-let publicFiles = helper.getFiles(PUBLIC_PATH)
+
+const publicFiles = helper.getFiles(PUBLIC_PATH)
 
 // fix Error [ERR_HTTP2_STREAM_ERROR]: Stream closed with error code NGHTTP2_REFUSED_STREAM
 // by https://gist.github.com/ryzokuken/71392a6cc0a962b5c0ea0662e8a3ae6a
 function push(stream, path) {
-  const file = publicFiles.get(path);
+  const file = publicFiles.get(path)
   if (!file) {
     return
   }
@@ -28,7 +28,7 @@ function push(stream, path) {
 const server = http2.createSecureServer({
   key: fs.readFileSync(SSL_PATH + '/server.key'),
   cert: fs.readFileSync(SSL_PATH + '/server.crt')
-});
+})
 
 server.on('stream', (stream, headers) => {
   console.log(headers[':path'])
