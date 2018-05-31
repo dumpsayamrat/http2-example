@@ -11,20 +11,17 @@ const PUBLIC_PATH = path.join(__dirname, '../public')
 const SSL_PATH = path.join(__dirname, '../ssl')
 let publicFiles = helper.getFiles(PUBLIC_PATH)
 
+// fix Error [ERR_HTTP2_STREAM_ERROR]: Stream closed with error code NGHTTP2_REFUSED_STREAM
+// by https://gist.github.com/ryzokuken/71392a6cc0a962b5c0ea0662e8a3ae6a
 function push(stream, path) {
   const file = publicFiles.get(path);
   if (!file) {
     return
   }
-  stream.pushStream({ [HTTP2_HEADER_PATH]: path }, (err, pushStream, headers) => {
-    if (err) {
-      console.error(err);
-      return;
-    };
-    file.headers.let = '123'
+  stream.pushStream({ [HTTP2_HEADER_PATH]: path }, { parent: stream.id }, (err, pushStream, headers) => {
+    if (err) throw err
     pushStream.respondWithFD(file.fileDescriptor, file.headers)
-    // pushStream.respond({ ':status': 200 });
-    // pushStream.end('content');
+    pushStream.end()
   })
 }
 
@@ -36,8 +33,8 @@ const server = http2.createSecureServer({
 server.on('stream', (stream, headers) => {
   console.log(headers[':path'])
   const reqPath = headers[':path'] === '/' ? '/index.html' : headers[':path']
-  const file = publicFiles.get(reqPath);
-  
+  const file = publicFiles.get(reqPath)
+
   if(!file) {
     stream.statusCode = 404
     stream.end()
@@ -45,14 +42,13 @@ server.on('stream', (stream, headers) => {
   }
 
   if (reqPath === '/index.html') {
-    // push(stream, '/app.js')
-    push(stream, '/app2.js')
-    push(stream, '/app.css')
+    push(stream, '/styles.css')
+    push(stream, '/app.js')
   }
 
   stream.respondWithFD(file.fileDescriptor, file.headers)
 })
 
-server.on('error', (err) => console.error(err));
+server.on('error', (err) => console.error(err))
 
-server.listen(3030);
+server.listen(3030)
